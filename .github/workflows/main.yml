@@ -16,3 +16,7 @@ jobs:
           python-version: '3.x'
       - name: Run script
         run: python money_maker.py
+        env:
+          FINNHUB_API_KEY = ${{ secrets.FINNHUB_API_KEY }}
+          ALPACA_API_KEY = ${{ secrets.ALPACA_API_KEY }}
+          ALPACA_API_SECRET = ${{ secrets.ALPACA_API_SECRET }}
