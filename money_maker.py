@@ -1,15 +1,16 @@
+import os
 from datetime import datetime, timedelta
 import requests
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
-FINNHUB_API_KEY = "d2ciht1r01qihtcrvj8gd2ciht1r01qihtcrvj90"
+FINNHUB_API_KEY = os.getenv("FINNHUB_API_KEY")
 
 from alpaca.trading.client import TradingClient
 from alpaca.trading.requests import MarketOrderRequest
 from alpaca.trading.enums import OrderSide, TimeInForce
 
-ALPACA_API_KEY = "PK2JRJ6VZGXNXP9BKTLA"
-ALPACA_API_SECRET = "fjjqI4YbHMonpTcd4SfWtbXAwy7KlqnZxvsmQ7UA"
+ALPACA_API_KEY = os.getenv("ALPACA_API_KEY")
+ALPACA_API_SECRET = os.getenv("ALPACA_API_SECRET")
 
 client = TradingClient(ALPACA_API_KEY, ALPACA_API_SECRET, paper=True)
 
@@ -42,7 +43,7 @@ def get_news(symbol, from_date, to_date):
     if response.status_code == 200:
         return response.json()
     else:
-        print("Błąd pobierania danych:", response.status_code)
+        print("Error fetching finnhub data:", response.status_code)
         return []
 
 def analyze_sentiment(texts):
@@ -58,7 +59,7 @@ def analyze_sentiment(texts):
 
 def handle_order(sym, sentiment):
     if sentiment > 0.13:
-        print(f"kupuje {sym}")
+        print(f"Buying {sym}")
         try:
             order = MarketOrderRequest(
                 symbol = sym,
@@ -68,10 +69,10 @@ def handle_order(sym, sentiment):
             )
             client.submit_order(order)
         except Exception as e:
-            print(f"Błąd alpaca api dla kupna {sym}: {e}")
+            print(f"Alpaca api error. Tried to buy {sym}: {e}")
 
     elif sentiment < -0.1:
-        print(f"sprzedaje {sym}")
+        print(f"Selling {sym}")
         try:
             order = MarketOrderRequest(
                 symbol = sym,
@@ -81,30 +82,29 @@ def handle_order(sym, sentiment):
             )
             client.submit_order(order)
         except Exception as e:
-            print(f"Błąd alpaca api dla sprzedazy {sym}: {e}")
+            print(f"Alpaca api error. Tried to sell {sym}: {e}")
 
     else:
-        print(f"trzymam {sym}")
+        print(f"Holding {sym}")
 
 if __name__ == "__main__":
     try:
         client.close_all_positions(cancel_orders=True)
-        print("Zamknięto każda aktywną pozycje!")
+        print("Closed all positions!")
     except Exception as e:
-        print(f"Błąd alpaca api dla zamknięcia każdej pozycji: {e}")
+        print(f"Alpaca api error. Tried to close all positions: {e}")
 
     today = datetime.now().date()
     week_ago = today - timedelta(days=7)  
 
-    print(f"Na bazie wiadomości od {today} do {week_ago}")
+    print(f"Based on news from {today} to {week_ago}")
 
     for sym in SYMBOLS:
         news = get_news(sym, week_ago, today)
-        headlines = [item['headline'] for item in news[:50]]  # 20 najnowszych wiadomości
+        headlines = [item['headline'] for item in news[:50]]
 
         avg_sentiment = analyze_sentiment(headlines)
 
-        #print(headlines)
-        print(f"Średni sentyment dla {sym}: {avg_sentiment:.3f}")
+        print(f"Average sentiment for {sym}: {avg_sentiment:.3f}")
 
         handle_order(sym, avg_sentiment)
