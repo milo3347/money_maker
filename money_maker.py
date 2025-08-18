@@ -35,7 +35,10 @@ SYMBOLS = [
     "UNH",
     "HD",
     "PYPL"
-]  
+]
+
+BUY_THRESHOLD = 0.15
+SELL_THRESHOLD = 0.09
 
 def get_news(symbol, from_date, to_date):
     url = f"https://finnhub.io/api/v1/company-news?symbol={symbol}&from={from_date}&to={to_date}&token={FINNHUB_API_KEY}"
@@ -58,7 +61,7 @@ def analyze_sentiment(texts):
         return 0
 
 def handle_order(sym, sentiment):
-    if sentiment > 0.13:
+    if sentiment > BUY_THRESHOLD:
         print(f"Buying {sym}")
         try:
             order = MarketOrderRequest(
@@ -71,7 +74,7 @@ def handle_order(sym, sentiment):
         except Exception as e:
             print(f"Alpaca api error. Tried to buy {sym}: {e}")
 
-    elif sentiment < -0.1:
+    elif sentiment < SELL_THRESHOLD:
         print(f"Selling {sym}")
         try:
             order = MarketOrderRequest(
