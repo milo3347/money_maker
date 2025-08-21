@@ -66,7 +66,7 @@ def handle_order(sym, sentiment):
         try:
             order = MarketOrderRequest(
                 symbol = sym,
-                qty = 4,
+                qty = 12,
                 side = OrderSide.BUY,
                 time_in_force = TimeInForce.DAY
             )
@@ -79,7 +79,7 @@ def handle_order(sym, sentiment):
         try:
             order = MarketOrderRequest(
                 symbol = sym,
-                qty = 4,
+                qty = 12,
                 side = OrderSide.SELL,
                 time_in_force = TimeInForce.DAY
             )
